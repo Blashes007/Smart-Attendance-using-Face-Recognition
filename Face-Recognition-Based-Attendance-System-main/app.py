@@ -26,6 +26,26 @@ def attendance():
         return render_template('index.html', selected_date=selected_date, no_data=True)
     
     return render_template('index.html', selected_date=selected_date, attendance_data=attendance_data)
+@app.route('/delete', methods=['POST'])
+def delete():
+    selected_date = request.form.get('selected_date')
+    name = request.form.get('name')
+    time = request.form.get('time')
 
+    conn = sqlite3.connect('attendance.db')
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM attendance WHERE date = ? AND name = ? AND time = ?", (selected_date, name, time))
+    conn.commit()
+
+    cursor.execute("SELECT name, time FROM attendance WHERE date = ?", (selected_date,))
+    attendance_data = cursor.fetchall()
+
+    conn.close()
+
+    if not attendance_data:
+        return render_template('index.html', selected_date=selected_date, no_data=True)
+    
+    return render_template('index.html', selected_date=selected_date, attendance_data=attendance_data)
 if __name__ == '__main__':
     app.run(debug=True)
