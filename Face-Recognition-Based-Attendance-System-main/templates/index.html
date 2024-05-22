@@ -41,7 +41,7 @@
                 margin-bottom: 20px;
             }
             button[type="submit"] {
-                background-color: #333;
+                background-color: #19A519;
                 color: #fff;
                 border: none;
                 padding: 10px;
@@ -52,6 +52,36 @@
             button[type="submit"]:hover {
                 background-color: #555;
             }
+            /* CSS for the delete button */
+            button[type="submit"].btn-danger {
+                background-color: #dc3545;
+                color: #fff;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+            
+            /* Hover effect */
+            button[type="submit"].btn-danger:hover {
+                background-color: #c82333;
+            }
+
+            .form-container{
+                
+                display: inline;
+                flex-direction: column;
+               
+                padding: 0px;
+                border-radius: 5px;
+               
+               
+               
+            }
+
+            
+            
         </style>
     </head>
     <body>
@@ -79,6 +109,7 @@
                 <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Time</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -86,6 +117,14 @@
                 <tr>
                     <td>{{ name }}</td>
                     <td>{{ time }}</td>
+                    <td>
+                        <form action="/delete" method="POST" class="container mt-5 form-container">
+                            <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                            <input type="hidden" name="name" value="{{ name }}">
+                            <input type="hidden" name="time" value="{{ time }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
