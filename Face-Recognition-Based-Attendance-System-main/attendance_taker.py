@@ -7,6 +7,7 @@ import time
 import logging
 import sqlite3
 import datetime
+import winsound
 
 
 # Dlib  / Use frontal face detector of Dlib
@@ -21,6 +22,7 @@ face_reco_model = dlib.face_recognition_model_v1("data/data_dlib/dlib_face_recog
 # Create a connection to the database
 conn = sqlite3.connect("attendance.db")
 cursor = conn.cursor()
+
 
 # Create a table for the current date
 current_date = datetime.datetime.now().strftime("%Y_%m_%d")  # Replace hyphens with underscores
@@ -139,7 +141,7 @@ class Face_Recognizer:
     #  cv2 window / putText on cv2 window
     def draw_note(self, img_rd):
         #  / Add some info on windows
-        cv2.putText(img_rd, "Face Recognizer with Deep Learning", (20, 40), self.font, 1, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(img_rd, "Face Recoginiton Smart Attendance", (20, 40), self.font, 1, (255, 255, 255), 1, cv2.LINE_AA)
         cv2.putText(img_rd, "Frame:  " + str(self.frame_cnt), (20, 100), self.font, 0.8, (0, 255, 0), 1,
                     cv2.LINE_AA)
         cv2.putText(img_rd, "FPS:    " + str(self.fps.__round__(2)), (20, 130), self.font, 0.8, (0, 255, 0), 1,
@@ -167,11 +169,15 @@ class Face_Recognizer:
 
         if existing_entry:
             print(f"{name} is already marked as present for {current_date}")
+            winsound.Beep(1000, 800) 
         else:
             current_time = datetime.datetime.now().strftime('%H:%M:%S')
             cursor.execute("INSERT INTO attendance (name, time, date) VALUES (?, ?, ?)", (name, current_time, current_date))
             conn.commit()
             print(f"{name} marked as present for {current_date} at {current_time}")
+            
+             # Play a beep sound
+            winsound.Beep(1000, 500)  # 1000 Hz frequency, 500 milliseconds duration
 
         conn.close()
 
