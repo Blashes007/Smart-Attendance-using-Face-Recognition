@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import sqlite3
 from datetime import datetime
+import subprocess
 
 app = Flask(__name__)
 
@@ -26,6 +27,7 @@ def attendance():
         return render_template('index.html', selected_date=selected_date, no_data=True)
     
     return render_template('index.html', selected_date=selected_date, attendance_data=attendance_data)
+
 @app.route('/delete', methods=['POST'])
 def delete():
     selected_date = request.form.get('selected_date')
@@ -47,5 +49,35 @@ def delete():
         return render_template('index.html', selected_date=selected_date, no_data=True)
     
     return render_template('index.html', selected_date=selected_date, attendance_data=attendance_data)
+
+@app.route('/take_attendance', methods=['POST'])
+def take_attendance():
+    try:
+        subprocess.Popen(['python', 'attendance_taker.py'])
+        message = 'Attendance taking process started.'
+    except Exception as e:
+        message = f'Error: {str(e)}'
+
+    return render_template('index.html', message=message)
+@app.route('/get_faces', methods=['POST'])
+def get_faces():
+    try:
+        subprocess.Popen(['python', 'get_faces_from_camera_tkinter.py'])
+        message = 'recording faces'
+    except Exception as e:
+        message = f'Error: {str(e)}'
+
+    return render_template('index.html', message=message)
+
+@app.route('/feature_extraction', methods=['POST'])
+def feature_extraction():
+    try:
+        subprocess.Popen(['python', 'features_extraction_to_csv.py'])
+        message = 'extracting features of  faces'
+    except Exception as e:
+        message = f'Error: {str(e)}'
+
+    return render_template('index.html', message=message)
+
 if __name__ == '__main__':
     app.run(debug=True)
