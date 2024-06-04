@@ -8,6 +8,8 @@ import logging
 import sqlite3
 import datetime
 import winsound
+import pyttsx3
+import sys
 
 
 # Dlib  / Use frontal face detector of Dlib
@@ -23,22 +25,22 @@ face_reco_model = dlib.face_recognition_model_v1("data/data_dlib/dlib_face_recog
 conn = sqlite3.connect("attendance.db")
 cursor = conn.cursor()
 
-
 # Create a table for the current date
 current_date = datetime.datetime.now().strftime("%Y_%m_%d")  # Replace hyphens with underscores
 table_name = "attendance" 
 create_table_sql = f"CREATE TABLE IF NOT EXISTS {table_name} (name TEXT, time TEXT, date DATE, UNIQUE(name, date))"
 cursor.execute(create_table_sql)
 
-
 # Commit changes and close the connection
 conn.commit()
 conn.close()
 
-
 class Face_Recognizer:
     def __init__(self):
         self.font = cv2.FONT_ITALIC
+
+        # Initialize text-to-speech engine
+        self.tts_engine = pyttsx3.init()
 
         # FPS
         self.frame_time = 0
@@ -166,18 +168,37 @@ class Face_Recognizer:
         # Check if the name already has an entry for the current date
         cursor.execute("SELECT * FROM attendance WHERE name = ? AND date = ?", (name, current_date))
         existing_entry = cursor.fetchone()
+       
 
         if existing_entry:
             print(f"{name} is already marked as present for {current_date}")
             winsound.Beep(1000, 800) 
+            self.tts_engine.say(f"{name} is already present")
+            self.tts_engine.runAndWait()
+            
+           
+            
+          
+          
         else:
             current_time = datetime.datetime.now().strftime('%H:%M:%S')
             cursor.execute("INSERT INTO attendance (name, time, date) VALUES (?, ?, ?)", (name, current_time, current_date))
             conn.commit()
             print(f"{name} marked as present for {current_date} at {current_time}")
-            
-             # Play a beep sound
+              # Play a beep sound
+             # Show a temporary dialogue box
             winsound.Beep(1000, 500)  # 1000 Hz frequency, 500 milliseconds duration
+            # Close the dialogue box after 3 seconds
+
+        
+
+            # Speak the attendance message
+            self.tts_engine.say(f"{name} is present!")
+            self.tts_engine.runAndWait()
+            
+            
+            
+           
 
         conn.close()
 
@@ -299,11 +320,8 @@ class Face_Recognizer:
                                               self.face_name_known_list[similar_person_num])
                                 
                                 # Insert attendance record
-                                nam =self.face_name_known_list[similar_person_num]
-
-                                print(type(self.face_name_known_list[similar_person_num]))
-                                print(nam)
-                                self.attendance(nam)
+                                name = self.face_name_known_list[similar_person_num]
+                                self.attendance(name)
                             else:
                                 logging.debug("  Face recognition result: Unknown person")
 
@@ -321,8 +339,6 @@ class Face_Recognizer:
                 logging.debug("Frame ends\n\n")
 
     
-
-
     def run(self):
         # cap = cv2.VideoCapture("video.mp4")  # Get video stream from video file
         cap = cv2.VideoCapture(0)              # Get video stream from camera
